@@ -7,10 +7,10 @@ async function login(req, res){
     try {
         const {username, password} = req.body;
         if(!username){
-            return res.status(401).json({ msg:"username cannot be empty!"})
+            return res.status(401).json({auth: false, msg:"username cannot be empty!"})
         }
         if(!password){
-            return res.status(401).json({ msg:"password cannot be empty!"})
+            return res.status(401).json({auth: false, msg:"password cannot be empty!"})
         }
         // find users based on unique
         const users = await prisma.user.findUnique({
@@ -18,20 +18,21 @@ async function login(req, res){
         });
         // validation error cannot find users
         if(!users){
-            return res.status(401).json({msg:"user not found"})
+            return res.status(401).json({auth: false, msg:"user not found"})
         }
         // add compare for password
         const compare = await bcrypt.compare(password, users.password)
         // validation when password not same
         if(!compare){
-            return res.status(401).json({auth: false, message:"password doesnt match!"})
+            return res.status(401).json({auth: false, msg:"password doesnt match!"})
         }
         // add sign with jwt
-        const token = jwt.sign(
-            { id:users.id, username:users.username }, 
-            process.env.TOKEN,
-            (err, token) => {
-                res.status(200).json({auth:true, status:"authorized", token})
+        const accesToken = jwt.sign(
+            { id:users.id, username:users.username, email:users.email }, 
+            process.env.ACCES_TOKEN,
+            {expiresIn:'20s'},
+            (err, accesToken) => {
+                res.status(200).json({auth:true, status:"authorized", accesToken})
             }
         )
     } catch (error) {
