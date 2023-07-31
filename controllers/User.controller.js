@@ -65,7 +65,7 @@ class UserController {
     static async GetUserById(req, res){
         const { id } = req.params;
         try {
-            const users = await prisma.user.findMany({ where: {id}});
+            const users = await prisma.user.findUnique({ where: {id}});
             if(!users){
                 return res.status(400).json({
                     result:"users not found"
@@ -73,7 +73,7 @@ class UserController {
             }
             res.status(200).json({
                 message:`succes find users with id ${id}`,
-                data:users
+                data: users
             })
         } catch (error) {
             res.status(500).json({ msg: error.message})
