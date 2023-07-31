@@ -26,7 +26,8 @@ class diamondController{
                 })
             }
             res.status(200).json({
-                message:"succes create data !"
+                message:"succes create data !",
+                payload: diamonds
             });
         } catch (error) {
             res.status(500).json({ msg: error.message})
