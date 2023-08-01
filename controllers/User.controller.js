@@ -14,6 +14,7 @@ class UserController {
                     password:hashedPassword
                 }
             });
+            
             // validation empty data
             if(!username){
                 return res.status(400).json({
@@ -37,7 +38,7 @@ class UserController {
                 message:"succes create data"
             });
         } catch (error) {
-            res.status(500).json({ msg: error.message})
+            res.status(500).json({ msg:"user already exists"})
         }
     }
 
@@ -133,7 +134,7 @@ class UserController {
             if(!users){
                 return res.status(400).json({msg:"cannot delete"});
             }
-            res.status(200).json({msg:`succes delete user with id`})
+            res.status(200).json({msg:`succes delete user`})
         } catch (error) {
             res.status(400).json({msg: error.message})
         }
