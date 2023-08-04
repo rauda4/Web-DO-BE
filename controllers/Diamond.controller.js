@@ -6,31 +6,28 @@ class diamondController{
     static async createDataDiamond(req, res){
         try {
             const { name, price } = req.body;
-            const diamonds = await prisma.diamond.create({
-                data: {
+            const parsedPrice = parseInt(price);
+            const diamond = await prisma.diamond.create({
+                data:{
                     name,
-                    price
-                }
+                    price:parsedPrice,
+                },
             });
-            // validation data
-            if(!name){
-                return res.status(404).json({
-                    result:"failed",
-                    message:"name cannot be empty"
-                })
-            }
-            if(!price){
-                return res.status(404).json({
-                    result:"failed",
-                    message:"price cannot be empty"
-                })
-            }
-            res.status(200).json({
-                message:"succes create data !",
-                payload: diamonds
-            });
+                if (!diamond) 
+                    return res.status(404).json({
+                      result: "Failed",
+                      messege: "failed create data",
+                    });
+                  
+                  res.status(200).json({
+                    message: "berhasil membuat data user",
+                    data: diamond
+                  });
+            
         } catch (error) {
-            res.status(500).json({ msg: error.message})
+            console.log(error);
+            res.status(500).json({msg:error.message});
+            
         }
     }
 
