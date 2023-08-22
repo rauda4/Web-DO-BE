@@ -1,11 +1,13 @@
-const productController = require("../controllers/Product.controller")
-const Router = require("express").Router()
+const productController = require('../controllers/Product.controller');
+const Router = require('express').Router();
+const uploadImage = require('../middlewares/image');
 
-Router.post("/", productController.createDataProduct)
-Router.get("/", productController.getProduct)
-Router.get("/:id", productController.getProductById)
-Router.get("/search/:key", productController.GetProductByQuery)
-Router.put("/:id", productController.updateDataProduct)
-Router.delete("/:id", productController.deleteProduct)
+Router.post('/', uploadImage, productController.createDataProduct);
+Router.post('/upload', uploadImage, productController.createImage);
+Router.get('/', productController.getProduct);
+Router.get('/:id', productController.getProductById);
+Router.get('/search/:key', productController.GetProductByQuery);
+Router.put('/:id', productController.updateDataProduct);
+Router.delete('/:id', productController.deleteProduct);
 
 module.exports = Router;
