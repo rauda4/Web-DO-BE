@@ -28,6 +28,10 @@ class diamondController {
     }
   }
 
+  // static async getDiamond({ request }) {
+  //   try {
+  //   } catch (error) {}
+  // }
   static async getDiamond(req, res) {
     try {
       const diamonds = await prisma.diamond.findMany({
