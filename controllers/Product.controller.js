@@ -56,8 +56,10 @@ class pruductController {
   }
 
   static async getProduct(req, res) {
+    const { tittle } = req.query;
     try {
       const products = await prisma.product.findMany({
+        where: { tittle: { startsWith: tittle } },
         orderBy: {
           tittle: 'asc',
         },
@@ -114,11 +116,11 @@ class pruductController {
         });
       }
       res.status(200).json({
-        message: `succes find query ${key}`,
+        message: `succes find product id ${key}`,
         data: products,
       });
     } catch (error) {
-      res.status(500).json({ msg: error.message });
+      res.status(400).json({ msg: error.message });
     }
   }
 
