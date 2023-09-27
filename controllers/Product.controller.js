@@ -13,7 +13,7 @@ class pruductController {
   }
   static async createDataProduct(req, res) {
     try {
-      const { tittle, description, price, thumbnail } = req.body;
+      const { tittle, description, price } = req.body;
       const upload = await uploadImage(req.file.path);
       await fs.unlinkSync(req.file.path);
       const imageUrl = upload.url;
@@ -70,8 +70,13 @@ class pruductController {
           msg: 'cannot find product',
         });
       }
+
+      // total data
+      const resultCount = await prisma.product.count();
+
       res.status(200).json({
         result: 'succes find product',
+        total_data: resultCount,
         payload: products,
       });
     } catch (error) {

@@ -4,8 +4,10 @@ const bcrypt = require('bcrypt');
 
 class UserController {
   static async getUser(req, res) {
+    const { username } = req.query;
     try {
       const users = await prisma.user.findMany({
+        where: { username: { startsWith: username } },
         orderBy: {
           username: 'desc',
         },
@@ -20,8 +22,13 @@ class UserController {
           message: 'Data is Empty',
         });
       }
+
+      // total user
+      const resultCount = await prisma.user.count();
+
       res.status(200).json({
         result: 'succes find data',
+        total_data: resultCount,
         payload: users,
       });
     } catch (error) {
@@ -49,13 +56,9 @@ class UserController {
 
   static async GetUserByQuery(req, res) {
     try {
-      const { key } = req.params;
+      const { username } = req.params;
       const users = await prisma.user.findMany({
-        where: {
-          username: {
-            startsWith: key,
-          },
-        },
+        where: { username: { startsWith: username } },
         orderBy: {
           username: 'asc',
         },
@@ -65,6 +68,8 @@ class UserController {
           result: 'users not found',
         });
       }
+      // total data users
+
       res.status(200).json({
         message: `succes find query ${key}`,
         data: users,
