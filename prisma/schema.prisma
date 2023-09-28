@@ -30,3 +30,20 @@ model product {
   description String
   price       Int
 }
+
+model paymentDiamond {
+  id          String @id @default(uuid())
+  order_id    Int    @default(autoincrement())
+  gameId      Int
+  serverId    Int
+  nameDiamond String
+  price       Int
+  payment     String
+}
+
+model paymentProduct {
+  order_id Int    @id @default(autoincrement())
+  name     String
+  price    Int
+  payment  String
+}
