@@ -18,7 +18,7 @@ class paymentController {
         serverKey: process.env.SERVER_KEY,
         clientKey: process.env.CLIENT_KEY
       });
-     
+
       const parameter = {
         transaction_details: {
           order_id: countId + 11,
@@ -33,7 +33,7 @@ class paymentController {
       };
       const transaction = await snap.createTransaction(parameter);
 
-      // create new database based data midtrans
+      // create new data on database based data midtrans
       const data = await prisma.paymentDiamond.create({
         data: {
           order_id: countId + 11,
@@ -44,7 +44,29 @@ class paymentController {
           nameDiamond
         }
       });
-      res.status(200).json({ message: 'succes', transaction, data });
+
+      // update new stock after purchased
+      // 1. get find diamond
+      const diamonds = await prisma.diamond.findUnique({
+        where: { name: nameDiamond }
+      });
+      const total_stock = diamonds.stock - 1;
+
+      // 2. update new stock
+      await prisma.diamond.update({
+        where: { name: nameDiamond },
+        data: {
+          stock: total_stock
+        }
+      });
+
+      res.status(200).json({
+        message: 'succes',
+        total_stock: total_stock,
+        transaction,
+        data
+      });
+      console.log(total_stock);
     } catch (error) {
       res.status(400).json({ msg: error.message });
     }
