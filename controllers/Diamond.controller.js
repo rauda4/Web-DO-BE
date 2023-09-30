@@ -6,12 +6,14 @@ require('dotenv').config();
 class diamondController {
   static async createDataDiamond(req, res) {
     try {
-      const { name, price } = req.body;
+      const { name, price, stock } = req.body;
       const parsedPrice = parseInt(price);
+      const parsedStock = parseInt(stock);
       const diamond = await prisma.diamond.create({
         data: {
           name,
-          price: parsedPrice
+          price: parsedPrice,
+          stock: parsedStock
         }
       });
       if (!diamond)
@@ -43,6 +45,7 @@ class diamondController {
           price: 'asc'
         }
       });
+
       if (!diamonds) {
         return res.status(400).json({
           result: 'error',
@@ -84,17 +87,44 @@ class diamondController {
   static async updateData(req, res) {
     try {
       const { id } = req.params;
-      const { name, price } = req.body;
+      const { name, price, stock } = req.body;
+      const parsedPrice = parseInt(price);
+      const parsedStock = parseInt(stock);
       const updateData = await prisma.diamond.update({
         where: { id },
         data: {
           name,
-          price
+          price: parsedPrice,
+          stock: parsedStock
         }
       });
+
       res.status(200).json({
         result: 'succes',
-        message: `succes updated diamond with id ${id}`,
+        message: `succes updated diamond`,
+        data: updateData
+      });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  }
+
+  static async updateDataStock(req, res) {
+    try {
+      const { name } = req.body;
+      const diamonds = await prisma.diamond.findUnique({ where: { name } });
+      const total_stock = diamonds.stock - 1;
+      const updateData = await prisma.diamond.update({
+        where: { name },
+        data: {
+          stock: total_stock
+        }
+      });
+
+      res.status(200).json({
+        result: 'succes',
+        message: `succes updated stock diamond`,
+        diamondStock: total_stock,
         data: updateData
       });
     } catch (error) {
@@ -112,33 +142,6 @@ class diamondController {
       res.status(200).json({ msg: 'succes delete diamond!' });
     } catch (error) {
       res.status(400).json({ msg: error.message });
-    }
-  }
-
-  static async paymentDiamond(req, res) {
-    try {
-      const snap = new midtransClient.Snap({
-        isProduction: false,
-        serverKey: process.env.SERVER_KEY,
-        clientKey: process.env.CLIENT_KEY
-      });
-
-      const { order_id, price, zoneId, serverId } = req.body;
-      const parameter = {
-        transaction_details: {
-          order_id: order_id,
-          gross_amount: price
-        },
-        customer_details: {
-          first_name: zoneId,
-          last_name: serverId
-        }
-      };
-      snap.createTransaction(parameter).then((transaction) => {
-        res.status(200).json({ message: 'succes', transaction });
-      });
-    } catch (error) {
-      res.status(500).json({ message: error.message });
     }
   }
 }
