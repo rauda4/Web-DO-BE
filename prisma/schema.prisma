@@ -21,14 +21,7 @@ model diamond {
   id    String @id @default(uuid())
   name  String @unique
   price Int
-}
-
-model product {
-  id          String @id @default(uuid())
-  tittle      String @unique
-  thumbnail   String
-  description String
-  price       Int
+  stock Int
 }
 
 model paymentDiamond {
@@ -39,6 +32,15 @@ model paymentDiamond {
   nameDiamond String
   price       Int
   payment     String
+}
+
+model product {
+  id          String @id @default(uuid())
+  tittle      String @unique
+  thumbnail   String
+  description String
+  price       Int
+  stock       Int
 }
 
 model paymentProduct {
