@@ -24,30 +24,31 @@ class pruductController {
           description,
           price: parsedprice,
           thumbnail: imageUrl,
-        },
+          stock
+        }
       });
 
       if (!tittle) {
         return res.status(400).json({
           result: 'failed',
-          message: 'tittle cannot be empty !',
+          message: 'tittle cannot be empty !'
         });
       }
       if (!description) {
         return res.status(400).json({
           result: 'failed',
-          message: 'description cannot be empty !',
+          message: 'description cannot be empty !'
         });
       }
       if (!price) {
         return res.status(400).json({
           result: 'failed',
-          message: 'price cannot be empty !',
+          message: 'price cannot be empty !'
         });
       }
       res.status(200).json({
         message: 'succes create data !',
-        data: products,
+        data: products
       });
     } catch (error) {
       console.log(error);
@@ -61,13 +62,13 @@ class pruductController {
       const products = await prisma.product.findMany({
         where: { tittle: { startsWith: tittle } },
         orderBy: {
-          tittle: 'asc',
-        },
+          tittle: 'asc'
+        }
       });
       if (!products) {
         return res.status(400).json({
           result: 'error',
-          msg: 'cannot find product',
+          msg: 'cannot find product'
         });
       }
 
@@ -77,7 +78,7 @@ class pruductController {
       res.status(200).json({
         result: 'succes find product',
         total_data: resultCount,
-        payload: products,
+        payload: products
       });
     } catch (error) {
       res.status(400).json({ msg: error.message });
@@ -90,12 +91,12 @@ class pruductController {
       const products = await prisma.product.findUnique({ where: { id } });
       if (!products) {
         return res.status(400).json({
-          result: 'product not found',
+          result: 'product not found'
         });
       }
       res.status(200).json({
         message: `succes find product id ${id}`,
-        data: products,
+        data: products
       });
     } catch (error) {
       res.status(400).json({ msg: error.message });
@@ -108,21 +109,21 @@ class pruductController {
       const products = await prisma.product.findMany({
         where: {
           tittle: {
-            startsWith: key,
-          },
+            startsWith: key
+          }
         },
         orderBy: {
-          tittle: 'asc',
-        },
+          tittle: 'asc'
+        }
       });
       if (!products) {
         return res.status(400).json({
-          result: 'product not found',
+          result: 'product not found'
         });
       }
       res.status(200).json({
         message: `succes find product id ${key}`,
-        data: products,
+        data: products
       });
     } catch (error) {
       res.status(400).json({ msg: error.message });
@@ -132,7 +133,7 @@ class pruductController {
   static async updateDataProduct(req, res) {
     try {
       const { id } = req.params;
-      const { tittle, thumbnail, description, price } = req.body;
+      const { tittle, thumbnail, description, price, stock } = req.body;
       const updateData = await prisma.product.update({
         where: { id },
         data: {
@@ -140,12 +141,13 @@ class pruductController {
           thumbnail,
           description,
           price,
-        },
+          stock
+        }
       });
       res.status(200).json({
         result: 'succes',
         message: `succes updated product with id ${id}`,
-        data: updateData,
+        data: updateData
       });
     } catch (error) {
       res.status(400).json({ msg: error.message });
