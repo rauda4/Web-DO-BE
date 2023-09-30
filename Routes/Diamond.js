@@ -4,6 +4,7 @@ const Router = require('express').Router();
 Router.post('/', diamondController.createDataDiamond);
 Router.get('/', diamondController.getDiamond);
 Router.get('/:id', diamondController.getDiamondById);
+Router.put('/', diamondController.updateDataStock);
 Router.put('/:id', diamondController.updateData);
 Router.delete('/:id', diamondController.deleteDiamond);
 
