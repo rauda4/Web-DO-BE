@@ -15,6 +15,7 @@ model user {
   username String @unique
   email    String
   password String
+  balance  Int
 }
 
 model diamond {
