@@ -1,118 +1,85 @@
+const jwt = require('jsonwebtoken');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const bcrypt = require('bcrypt');
+const jwtDecode = require('jwt-decode');
 
 class UserController {
-  static async getUser(req, res) {
-    const { username } = req.query;
-    try {
+  static async getUsers(req, res, next) {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token == null) {
+      jwt.verify(token, process.env.ACCES_TOKEN, (err, user) => {
+        if (err) {
+          return res.status(403).json({ auth: false, msg: 'forbidden' });
+        }
+        req.user = user;
+        next();
+      });
+    } else {
       const users = await prisma.user.findMany({
-        where: { username: { startsWith: username } },
-        orderBy: {
-          username: 'desc',
-        },
         select: {
-          id: true,
+          username: true,
+          email: true
+        }
+      });
+      return res.status(200).json({ msg: 'Authorized', data: users });
+    }
+  }
+
+  static async selectUser(req, res, next) {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token == null) {
+      jwt.verify(token, process.env.ACCES_TOKEN, (err, user) => {
+        if (err) {
+          return res.status(403).json({ auth: false, msg: 'forbidden' });
+        }
+        req.user = user;
+        next();
+      });
+    } else {
+      const userAccount = jwtDecode(token);
+      const id = userAccount.id;
+      const users = await prisma.user.findUnique({
+        where: { id },
+        select: {
           username: true,
           email: true,
-        },
+          balance: true
+        }
       });
-      if (!users) {
-        return res.status(400).json({
-          message: 'Data is Empty',
-        });
-      }
-
-      // total user
-      const resultCount = await prisma.user.count();
-
-      res.status(200).json({
-        result: 'succes find data',
-        total_data: resultCount,
-        payload: users,
-      });
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
+      return res.status(200).json({ msg: 'Authorized', data: users });
     }
   }
 
-  static async GetUserById(req, res) {
-    const { id } = req.params;
-    try {
-      const users = await prisma.user.findUnique({ where: { id } });
-      if (!users) {
-        return res.status(400).json({
-          result: 'users not found',
-        });
-      }
-      res.status(200).json({
-        message: `succes find users with id ${id}`,
-        data: users,
+  static async updateUsers(req, res, next) {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+    if (token == null) {
+      jwt.verify(token, process.env.ACCES_TOKEN, (err, user) => {
+        if (err) {
+          return res.status(403).json({ auth: false, msg: 'forbidden' });
+        }
+        req.user = user;
+        next();
       });
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  }
-
-  static async GetUserByQuery(req, res) {
-    try {
-      const { username } = req.params;
-      const users = await prisma.user.findMany({
-        where: { username: { startsWith: username } },
-        orderBy: {
-          username: 'asc',
-        },
-      });
-      if (!users) {
-        return res.status(400).json({
-          result: 'users not found',
-        });
-      }
-      // total data users
-
-      res.status(200).json({
-        message: `succes find query ${key}`,
-        data: users,
-      });
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  }
-
-  static async updateUser(req, res) {
-    try {
-      const { id } = req.params;
-      const { username, email, password } = req.body;
-      const hashPw = await bcrypt.hash(password, 12);
+    } else {
+      const userAccount = jwtDecode(token);
+      const id = userAccount.id;
+      const { username } = req.body;
+      const user = await prisma.user.findUnique({ where: { id } });
       const updateData = await prisma.user.update({
         where: { id },
         data: {
           username,
-          email,
-          password: hashPw,
-        },
+          email: user.email
+        }
       });
-      res.status(200).json({
-        result: 'succes',
-        message: `user with id = ${id} updated`,
-        data: updateData,
-      });
-    } catch (error) {
-      res.status(500).json({ msg: error.message });
-    }
-  }
-  static async deleteUser(req, res) {
-    const { id } = req.params;
-    try {
-      const users = await prisma.user.delete({
-        where: { id },
-      });
-      if (!users) {
-        return res.status(400).json({ msg: 'cannot delete' });
-      }
-      res.status(200).json({ msg: `succes delete user` });
-    } catch (error) {
-      res.status(400).json({ msg: error.message });
+      return res
+        .status(200)
+        .json({ msg: 'succes update profile', data: updateData });
     }
   }
 }
