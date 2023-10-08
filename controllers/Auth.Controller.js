@@ -11,7 +11,7 @@ class AuthController {
     if (!email || !username || !password) {
       return res.status(404).json({
         result: 'Failed',
-        message: 'Please add all fields',
+        message: 'Please add all fields'
       });
     }
 
@@ -28,11 +28,12 @@ class AuthController {
           username,
           password: hashPw,
           email,
-        },
+          balance: 0
+        }
       });
       res.status(200).json({
         message: 'Succes create data',
-        data: user,
+        data: user
       });
     } catch (error) {
       if (error.code === 'P2002') {
@@ -65,7 +66,7 @@ class AuthController {
       const payload = {
         id: user.id,
         username: user.username,
-        email: user.email,
+        email: user.email
       };
       return jwt.sign(payload, process.env.ACCES_TOKEN, (err, token) => {
         res.status(200).json({ auth: true, status: 'authorized', token });
