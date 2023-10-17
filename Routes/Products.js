@@ -7,7 +7,7 @@ Router.post('/upload', uploadImage, productController.createImage);
 Router.get('/', productController.getProduct);
 Router.get('/:id', productController.getProductById);
 Router.get('/search/:key', productController.GetProductByQuery);
-Router.put('/:id', productController.updateDataProduct);
+Router.put('/:id', uploadImage, productController.updateDataProduct);
 Router.delete('/:id', productController.deleteProduct);
 
 module.exports = Router;
