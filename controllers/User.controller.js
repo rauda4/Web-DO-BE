@@ -4,40 +4,37 @@ const prisma = new PrismaClient();
 const jwtDecode = require('jwt-decode');
 
 class UserController {
-  static async getUsers(req, res, next) {
+  static async getUsers(req, res) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
-
     if (token == null) {
-      jwt.verify(token, process.env.ACCES_TOKEN, (err, user) => {
+      jwt.verify(token, process.env.ACCES_TOKEN, (err) => {
         if (err) {
           return res.status(403).json({ auth: false, msg: 'forbidden' });
         }
-        req.user = user;
-        next();
       });
     } else {
       const users = await prisma.user.findMany({
         select: {
+          id: true,
           username: true,
-          email: true
+          email: true,
+          balance: true
         }
       });
-      return res.status(200).json({ msg: 'Authorized', data: users });
+      return res.status(200).json({ msg: 'Succes', data: users });
     }
   }
 
-  static async selectUser(req, res, next) {
+  static async selectUser(req, res) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
 
     if (token == null) {
-      jwt.verify(token, process.env.ACCES_TOKEN, (err, user) => {
+      jwt.verify(token, process.env.ACCES_TOKEN, (err) => {
         if (err) {
           return res.status(403).json({ auth: false, msg: 'forbidden' });
         }
-        req.user = user;
-        next();
       });
     } else {
       const userAccount = jwtDecode(token);
@@ -50,11 +47,11 @@ class UserController {
           balance: true
         }
       });
-      return res.status(200).json({ msg: 'Authorized', data: users });
+      return res.status(200).json({ msg: 'Succes', data: users });
     }
   }
 
-  static async updateUsers(req, res, next) {
+  static async updateUsers(req, res) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null) {
@@ -62,8 +59,6 @@ class UserController {
         if (err) {
           return res.status(403).json({ auth: false, msg: 'forbidden' });
         }
-        req.user = user;
-        next();
       });
     } else {
       const userAccount = jwtDecode(token);

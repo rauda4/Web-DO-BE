@@ -5,45 +5,63 @@ const { uploadImage } = require('../utils/cloudinary');
 
 class pruductController {
   static async createImage(req, res) {
-    const upload = await uploadImage(req.file.path);
-    await fs.unlinkSync(req.file.path);
+    const imagePath = req.file.path;
+    const upload = await uploadImage(imagePath);
+    await fs.unlinkSync(imagePath);
     const imageUrl = upload.url;
-    console.log(imageUrl);
     res.send('upload sukses');
   }
   static async createDataProduct(req, res) {
     try {
-      const { tittle, description, price } = req.body;
-      const upload = await uploadImage(req.file.path);
-      await fs.unlinkSync(req.file.path);
+      const {
+        product_name,
+        product_description,
+        product_price,
+        product_stock
+      } = req.body;
+      // handle upload image
+      const imagePath = req.file.path;
+      const upload = await uploadImage(imagePath);
+      await fs.unlinkSync(imagePath);
       const imageUrl = upload.url;
-      const parsedprice = parseInt(price);
+      // handle convert string to int
+      const parsedStock = parseInt(product_stock);
+      const parsedPrice = parseInt(product_price);
+      // handle count data for product code
+      const countId = await prisma.product.count();
       const products = await prisma.product.create({
         data: {
-          tittle,
-          description,
-          price: parsedprice,
-          thumbnail: imageUrl,
-          stock
+          product_code: 'PL2' + countId,
+          product_name,
+          product_description,
+          product_price: parsedPrice,
+          product_icon: imageUrl,
+          product_stock: parsedStock
         }
       });
 
-      if (!tittle) {
+      if (!product_name) {
         return res.status(400).json({
           result: 'failed',
-          message: 'tittle cannot be empty !'
+          message: 'Name cannot be empty !'
         });
       }
-      if (!description) {
+      if (!product_description) {
         return res.status(400).json({
           result: 'failed',
           message: 'description cannot be empty !'
         });
       }
-      if (!price) {
+      if (!product_price) {
         return res.status(400).json({
           result: 'failed',
           message: 'price cannot be empty !'
+        });
+      }
+      if (!product_stock) {
+        return res.status(400).json({
+          result: 'failed',
+          message: 'stock cannot be empty !'
         });
       }
       res.status(200).json({
@@ -57,12 +75,18 @@ class pruductController {
   }
 
   static async getProduct(req, res) {
-    const { tittle } = req.query;
+    const { product, description, page = 1, limit = 5 } = req.query;
     try {
+      const skip = (page - 1) * limit;
       const products = await prisma.product.findMany({
-        where: { tittle: { startsWith: tittle } },
+        take: parseInt(limit || 5),
+        skip: skip,
+        where: {
+          product_name: { contains: product },
+          product_description: { contains: description }
+        },
         orderBy: {
-          tittle: 'asc'
+          product_code: 'asc'
         }
       });
       if (!products) {
@@ -78,6 +102,8 @@ class pruductController {
       res.status(200).json({
         result: 'succes find product',
         total_data: resultCount,
+        current_page: page - 0,
+        current_limit: limit,
         payload: products
       });
     } catch (error) {
@@ -133,15 +159,29 @@ class pruductController {
   static async updateDataProduct(req, res) {
     try {
       const { id } = req.params;
-      const { tittle, thumbnail, description, price, stock } = req.body;
+      const {
+        product_name,
+        product_description,
+        product_price,
+        product_stock
+      } = req.body;
+      // handle upload image
+      const imagePath = req.file.path;
+      const upload = await uploadImage(imagePath);
+      await fs.unlinkSync(imagePath);
+      const imageUrl = upload.url;
+      // handle convert string to int
+      const parsedStock = parseInt(product_stock);
+      const parsedPrice = parseInt(product_price);
+      // handle count data for product code
       const updateData = await prisma.product.update({
         where: { id },
         data: {
-          tittle,
-          thumbnail,
-          description,
-          price,
-          stock
+          product_name,
+          product_icon: imageUrl,
+          product_description,
+          product_price: parsedPrice,
+          product_stock: parsedStock
         }
       });
       res.status(200).json({

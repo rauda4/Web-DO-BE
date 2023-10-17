@@ -21,7 +21,7 @@ class paymentController {
 
       const parameter = {
         transaction_details: {
-          order_id: countId + 11,
+          order_id: countId + 12,
           gross_amount: price
         },
         item_detailss: {
@@ -48,15 +48,15 @@ class paymentController {
       // update new stock after purchased
       // 1. get find diamond
       const diamonds = await prisma.diamond.findUnique({
-        where: { name: nameDiamond }
+        where: { diamond_name: nameDiamond }
       });
-      const total_stock = diamonds.stock - 1;
+      const total_stock = diamonds.diamond_stock - 1;
 
       // 2. update new stock
       await prisma.diamond.update({
-        where: { name: nameDiamond },
+        where: { diamond_name: nameDiamond },
         data: {
-          stock: total_stock
+          diamond_stock: total_stock
         }
       });
 

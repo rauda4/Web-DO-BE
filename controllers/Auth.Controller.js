@@ -15,12 +15,6 @@ class AuthController {
       });
     }
 
-    // check if user exists
-    // const userExist = await prisma.user.findMany({ where: { email } });
-    // if (userExist) {
-    //   res.status(500).json({ message: 'Email already doest exist' });
-    // }
-
     try {
       const hashPw = await bcrypt.hash(password, 12);
       const user = await prisma.user.create({
@@ -48,13 +42,13 @@ class AuthController {
   static async login(req, res) {
     try {
       // validation body
-      const { username, password } = req.body;
-      if (!username)
-        return res.status(401).json({ msg: 'Username cannot be empty!' });
+      const { email, password } = req.body;
+      if (!email)
+        return res.status(401).json({ msg: 'Email cannot be empty!' });
       if (!password)
         return res.status(401).json({ msg: 'Password cannot be empty!' });
 
-      const user = await prisma.user.findUnique({ where: { username } });
+      const user = await prisma.user.findUnique({ where: { email } });
       if (!user) return res.status(401).json({ msg: 'User not found' });
       // validation password with jwt
       const compare = await bcrypt.compare(password, user.password);

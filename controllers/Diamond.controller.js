@@ -1,19 +1,18 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-const midtransClient = require('midtrans-client');
 require('dotenv').config();
 
 class diamondController {
   static async createDataDiamond(req, res) {
     try {
-      const { name, price, stock } = req.body;
-      const parsedPrice = parseInt(price);
-      const parsedStock = parseInt(stock);
+      const { diamond_name, diamond_price, diamond_stock } = req.body;
+      const parsedPrice = parseInt(diamond_price);
+      const parsedStock = parseInt(diamond_stock);
       const diamond = await prisma.diamond.create({
         data: {
-          name,
-          price: parsedPrice,
-          stock: parsedStock
+          diamond_name,
+          diamond_price: parsedPrice,
+          diamond_stock: parsedStock
         }
       });
       if (!diamond)
@@ -37,12 +36,12 @@ class diamondController {
   //   } catch (error) {}
   // }
   static async getDiamond(req, res) {
-    const { name } = req.query;
+    const { diamond_name } = req.query;
     try {
       const diamonds = await prisma.diamond.findMany({
-        where: { name: { startsWith: name } },
+        where: { diamond_name: { startsWith: diamond_name } },
         orderBy: {
-          price: 'asc'
+          diamond_price: 'asc'
         }
       });
 
@@ -87,15 +86,15 @@ class diamondController {
   static async updateData(req, res) {
     try {
       const { id } = req.params;
-      const { name, price, stock } = req.body;
-      const parsedPrice = parseInt(price);
-      const parsedStock = parseInt(stock);
+      const { diamond_name, diamond_price, diamond_stock } = req.body;
+      const parsedPrice = parseInt(diamond_price);
+      const parsedStock = parseInt(diamond_stock);
       const updateData = await prisma.diamond.update({
-        where: { id },
+        where: { diamond_id: id },
         data: {
-          name,
-          price: parsedPrice,
-          stock: parsedStock
+          diamond_name,
+          diamond_price: parsedPrice,
+          diamond_stock: parsedStock
         }
       });
 
@@ -113,7 +112,7 @@ class diamondController {
     try {
       const { name } = req.body;
       const diamonds = await prisma.diamond.findUnique({ where: { name } });
-      const total_stock = diamonds.stock - 1;
+      const totalStock = diamonds.stock - 1;
       const updateData = await prisma.diamond.update({
         where: { name },
         data: {
@@ -124,7 +123,7 @@ class diamondController {
       res.status(200).json({
         result: 'succes',
         message: `succes updated stock diamond`,
-        diamondStock: total_stock,
+        diamondStock: totalStock,
         data: updateData
       });
     } catch (error) {
@@ -135,7 +134,9 @@ class diamondController {
   static async deleteDiamond(req, res) {
     try {
       const { id } = req.params;
-      const diamonds = await prisma.diamond.delete({ where: { id } });
+      const diamonds = await prisma.diamond.delete({
+        where: { diamond_id: id }
+      });
       if (!diamonds) {
         res.status(400).json({ msg: 'cannot delete data !' });
       }
