@@ -118,7 +118,7 @@ class TransactionController {
     } else {
       const userAccount = jwtDecode(token);
       const user_id = userAccount.id;
-      const count = await prisma.transactionHistory.count({
+      const count = await prisma.transaction.count({
         where: { user_id }
       });
       const data = await prisma.transaction.findMany({
