@@ -11,13 +11,13 @@ datasource db {
 }
 
 model user {
-  id          String        @id @default(uuid())
-  email       String        @unique
-  username    String
-  password    String
-  balance     Int
-  transaction transaction[]
-  topUp       topUp[]
+  id                 String               @id @default(uuid())
+  email              String               @unique
+  username           String
+  password           String
+  transactionHistory transactionHistory[]
+  topUp              topUp[]
+  transaction        transaction[]
 }
 
 model diamond {
@@ -37,15 +37,27 @@ model paymentDiamond {
   payment     String
 }
 
-model transaction {
-  id                      String   @id @default(uuid())
-  transaction_id          String   @unique
+model transactionHistory {
+  id                      String  @id @default(uuid())
+  transaction_id          String  @unique
   transaction_type        String
   transaction_description String
   transaction_amount      Int
-  created_on              DateTime
-  user                    user?    @relation(fields: [user_id], references: [id])
+  created_on              String
+  user                    user?   @relation(fields: [user_id], references: [id])
   user_id                 String?
+}
+
+model transaction {
+  id                 String  @id @default(uuid())
+  transaction_id     String  @unique
+  user               user?   @relation(fields: [user_id], references: [id])
+  user_id            String?
+  product_code       String
+  product_name       String
+  transaction_type   String
+  transaction_amount Int
+  created_on         String
 }
 
 model topUp {
