@@ -18,8 +18,7 @@ class UserController {
         select: {
           id: true,
           username: true,
-          email: true,
-          balance: true
+          email: true
         }
       });
       return res.status(200).json({ msg: 'Succes', data: users });
@@ -39,15 +38,24 @@ class UserController {
     } else {
       const userAccount = jwtDecode(token);
       const id = userAccount.id;
+      const balance = await prisma.topUp.aggregate({
+        where: { user_id: id },
+        _sum: {
+          top_up_amount: true
+        }
+      });
+      console.log();
       const users = await prisma.user.findUnique({
         where: { id },
         select: {
           username: true,
-          email: true,
-          balance: true
+          email: true
         }
       });
-      return res.status(200).json({ msg: 'Succes', data: users });
+      return res.status(200).json({
+        msg: 'Succes',
+        data: users
+      });
     }
   }
 

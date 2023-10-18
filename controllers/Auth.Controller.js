@@ -21,8 +21,7 @@ class AuthController {
         data: {
           username,
           password: hashPw,
-          email,
-          balance: 0
+          email
         }
       });
       res.status(200).json({
