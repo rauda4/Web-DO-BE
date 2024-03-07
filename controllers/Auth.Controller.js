@@ -61,10 +61,16 @@ class AuthController {
         username: user.username,
         email: user.email
       };
-      return jwt.sign(payload, process.env.ACCES_TOKEN, (err, token) => {
-        res.status(200).json({ auth: true, status: 'authorized', token });
-      });
+      return jwt.sign(
+        payload,
+        process.env.ACCES_TOKEN,
+        (err, token) => {
+          res.status(200).json({ auth: true, status: 'authorized', token });
+        },
+        { expiresIn: '10s' }
+      );
     } catch (error) {
+      localStorage.clear();
       res.send(error.message);
     }
   }

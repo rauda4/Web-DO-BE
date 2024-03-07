@@ -29,12 +29,13 @@ model diamond {
 
 model paymentDiamond {
   id          String @id @default(uuid())
-  order_id    Int    @default(autoincrement())
+  order_id    String
   gameId      Int
   serverId    Int
   nameDiamond String
   price       Int
   payment     String
+  created_on  String
 }
 
 model transactionHistory {
@@ -78,8 +79,33 @@ model product {
 }
 
 model paymentProduct {
-  order_id Int    @id @default(autoincrement())
-  name     String
-  price    Int
-  payment  String
+  id                String @id @default(uuid())
+  order_id          String @unique
+  product_name      String
+  product_code      String
+  response_midtrans String
+}
+
+model hotel {
+  id                String             @id @default(uuid())
+  hotel_code        String             @unique
+  hotel_name        String
+  hotel_icon        String
+  hotel_description String
+  hotel_price       Int
+  hotel_rating      String
+  hotel_facilitas   Int
+  type_room         String
+  data_order_hotel  data_order_hotel[]
+}
+
+model data_order_hotel {
+  id              String @id @default(uuid())
+  order_code      String @unique
+  order_name      String
+  order_handphone String
+  order_email     String
+  order_request   Int
+  hotel           hotel? @relation(fields: [hotel_code], references: [hotel_code])
+  hotel_code      String
 }

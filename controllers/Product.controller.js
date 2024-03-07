@@ -75,7 +75,7 @@ class pruductController {
   }
 
   static async getProduct(req, res) {
-    const { product, description, page = 1, limit = 5 } = req.query;
+    const { product, description, page = 1, limit = 50 } = req.query;
     try {
       const skip = (page - 1) * limit;
       const products = await prisma.product.findMany({
@@ -104,7 +104,7 @@ class pruductController {
         total_data: resultCount,
         current_page: page - 0,
         current_limit: limit,
-        payload: products
+        data: products
       });
     } catch (error) {
       res.status(400).json({ msg: error.message });
@@ -156,6 +156,30 @@ class pruductController {
     }
   }
 
+  static async updateImageProduct(req, res) {
+    try {
+      const { id } = req.params;
+      const imagePath = req.file.path;
+      const upload = await uploadImage(imagePath);
+      await fs.unlinkSync(imagePath);
+      const imageUrl = upload.url;
+
+      const updateImage = await prisma.product.update({
+        where: { id },
+        data: {
+          product_icon: imageUrl
+        }
+      });
+      res.status(200).json({
+        result: 'succes',
+        message: `Image succes updated`,
+        data: updateImage
+      });
+    } catch (error) {
+      res.status(400).json({ msg: error.message });
+    }
+  }
+
   static async updateDataProduct(req, res) {
     try {
       const { id } = req.params;
@@ -165,11 +189,7 @@ class pruductController {
         product_price,
         product_stock
       } = req.body;
-      // handle upload image
-      const imagePath = req.file.path;
-      const upload = await uploadImage(imagePath);
-      await fs.unlinkSync(imagePath);
-      const imageUrl = upload.url;
+
       // handle convert string to int
       const parsedStock = parseInt(product_stock);
       const parsedPrice = parseInt(product_price);
@@ -178,7 +198,6 @@ class pruductController {
         where: { id },
         data: {
           product_name,
-          product_icon: imageUrl,
           product_description,
           product_price: parsedPrice,
           product_stock: parsedStock
@@ -186,7 +205,7 @@ class pruductController {
       });
       res.status(200).json({
         result: 'succes',
-        message: `succes updated product with id ${id}`,
+        message: `Product succes updated `,
         data: updateData
       });
     } catch (error) {

@@ -23,6 +23,7 @@ class TransactionController {
         where: { user_id },
         take: parseInt(limit || 5),
         skip: skip,
+        orderBy: { created_on: 'asc' },
         select: {
           transaction_id: true,
           transaction_type: true,
@@ -42,7 +43,7 @@ class TransactionController {
     }
   }
 
-  static async balance(req, res) {
+  static async getBalance(req, res) {
     const authHeader = req.headers.authorization;
     const token = authHeader && authHeader.split(' ')[1];
     if (token == null) {
@@ -89,9 +90,18 @@ class TransactionController {
       const count = await prisma.topUp.count({
         where: { user_id }
       });
-      const data = await prisma.topUp.findMany({ where: { user_id } });
+      const data = await prisma.topUp.findMany({
+        where: { user_id }
+      });
 
-      // count total top up
+      // get sum total baalnce with array filter
+      const datas = await prisma.topUp.findMany({ where: { user_id } });
+      let totalTopUp = 0;
+      datas.forEach((item) => {
+        totalTopUp += item.top_up_amount;
+      });
+
+      // count total top up with prisma aggregate sum
       const balance = await prisma.topUp.aggregate({
         where: { user_id },
         _sum: {
@@ -103,6 +113,7 @@ class TransactionController {
         msg: 'Succes',
         total_data: count,
         total_amount_topup: balance._sum.top_up_amount || 0,
+        // total_amount_topup_foreach: totalTopUp, // with foreach
         data
       });
     }
@@ -118,14 +129,17 @@ class TransactionController {
     } else {
       const userAccount = jwtDecode(token);
       const user_id = userAccount.id;
-      const count = await prisma.transaction.count({
-        where: { user_id }
-      });
       const data = await prisma.transaction.findMany({
         where: { user_id }
       });
 
-      // count total balance transaction
+      // count total balance with foreach
+      let totalPayment = 0;
+      data.forEach((item) => {
+        totalPayment += item.transaction_amount;
+      });
+
+      // count total balance with prisma sum
       const balance = await prisma.transaction.aggregate({
         where: { user_id },
         _sum: { transaction_amount: true }
@@ -133,8 +147,9 @@ class TransactionController {
 
       return res.status(200).json({
         msg: 'Top Up Balance Succes',
-        total_amount_transaction: balance._sum.transaction_amount || 0,
-        total_data: count,
+        total_amount_transaction: balance._sum.transaction_amount || 0, // with prisma sum
+        // total_amount_transaction: totalPayment || 0, // with array foreach
+        total_data: data.length,
         data
       });
     }
@@ -188,11 +203,6 @@ class TransactionController {
       const { product_code } = req.body;
       const count = Math.floor(Math.random() * 100000);
 
-      // find product based product code
-      const product = await prisma.product.findUnique({
-        where: { product_code }
-      });
-
       // check total amount top up
       const topup = await prisma.topUp.aggregate({
         where: { user_id },
@@ -207,9 +217,14 @@ class TransactionController {
         where: { user_id },
         _sum: { transaction_amount: true }
       });
-      const totalPayment = payment._sum.transaction_amount;
+      const totalPaymentTransaction = payment._sum.transaction_amount;
 
-      const totalBalance = totalTopUp - totalPayment;
+      // find product based product code
+      const product = await prisma.product.findUnique({
+        where: { product_code }
+      });
+
+      const totalBalance = totalTopUp - totalPaymentTransaction;
       const priceProduct = product.product_price;
 
       // handler check balance before transaction
@@ -223,12 +238,12 @@ class TransactionController {
         // create new transaction
         const transaction = await prisma.transaction.create({
           data: {
-            product_code,
+            product_code, // get from req.body
             transaction_id: 'INV-' + count,
-            user_id,
-            product_name: product.product_name,
+            user_id, // get from token decode after login
+            product_name: product.product_name, // get from result filter product
             transaction_type: 'PAYMENT',
-            transaction_amount: product.product_price,
+            transaction_amount: product.product_price, // get from result filter product
             created_on: Date()
           }
         });
@@ -238,8 +253,8 @@ class TransactionController {
             user_id,
             transaction_id: 'INV-' + count,
             transaction_type: 'PAYMENT',
-            transaction_description: product.product_name,
-            transaction_amount: product.product_price,
+            transaction_description: product.product_name, // get from result filter product
+            transaction_amount: product.product_price, // get from result filter product
             created_on: Date()
           }
         });
